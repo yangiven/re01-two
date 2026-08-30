@@ -245,6 +245,53 @@
             margin-bottom: 12px;
         }
 
+        /* 分类统计 */
+        .category-section {
+            margin: 14px 0 10px;
+            text-align: left;
+        }
+        .category-section h4 {
+            font-size: 17px;
+            color: #4a2a1a;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #4a2a1a;
+        }
+        .category-item .cat-label {
+            min-width: 50px;
+            font-weight: 600;
+            color: #682c10;
+        }
+        .category-item .cat-bar {
+            flex: 1;
+            height: 8px;
+            background: #f0e8e8;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .category-item .cat-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #ea8b8b, #d66a6a);
+            transition: width 0.8s ease;
+        }
+        .category-item .cat-score {
+            min-width: 24px;
+            font-weight: 700;
+            color: #b07a7a;
+            font-size: 13px;
+            text-align: right;
+        }
+
+        /* 图表容器 */
         #chartContainer {
             width: 100%;
             height: auto;
@@ -296,12 +343,13 @@
         }
         .tag-pill .badge {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 20px;
             padding: 0 10px;
-            margin-left: 6px;
+            margin-left: 8px;
             font-size: 13px;
             font-weight: 600;
+            color: rgba(255,255,255,0.9);
         }
         .tag-color-0 {
             background: linear-gradient(135deg, #e76f6f, #d94f4f);
@@ -346,36 +394,6 @@
             margin-right: 6px;
         }
 
-        /* 分享区域 */
-        .share-area {
-            margin-top: 14px;
-            padding: 12px 16px;
-            background: #faf5f5;
-            border-radius: 16px;
-            border: 1px dashed #e0d0d0;
-        }
-        .share-area .share-text {
-            font-size: 14px;
-            color: #7a5a5a;
-            background: #fff;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1px solid #eee;
-            word-break: break-all;
-            text-align: left;
-            line-height: 1.6;
-            max-height: 80px;
-            overflow-y: auto;
-            font-family: "Microsoft YaHei", sans-serif;
-        }
-        .share-area .share-text::-webkit-scrollbar {
-            width: 3px;
-        }
-        .share-area .share-text::-webkit-scrollbar-thumb {
-            background: #dbb0b0;
-            border-radius: 3px;
-        }
-
         /* ===== 响应式 ===== */
         @media (max-width: 600px) {
             .card {
@@ -417,6 +435,13 @@
                 font-size: 14px;
                 padding: 10px 20px;
             }
+            .category-item {
+                font-size: 13px;
+                gap: 6px;
+            }
+            .category-item .cat-label {
+                min-width: 40px;
+            }
         }
         @media (max-width: 420px) {
             .img-opt {
@@ -445,6 +470,13 @@
             #chartContainer {
                 min-height: 140px;
             }
+            .category-item {
+                font-size: 12px;
+                gap: 4px;
+            }
+            .category-item .cat-label {
+                min-width: 34px;
+            }
         }
     </style>
 </head>
@@ -456,7 +488,7 @@
         <h1>日乙男主偏好测试</h1>
         <p class="sub">选出你的心动男主，生成专属词条热度图！</p>
         <button class="start-btn" id="startBtn">开始测试 ✨</button>
-        <p style="margin-top:16px;font-size:13px;color:#c0a0a0;">共10题 · 解锁你的恋爱偏好</p>
+        <p style="margin-top:16px;font-size:13px;color:#c0a0a0;">共10题 · 可多选 · 解锁你的恋爱偏好</p>
     </div>
 
     <!-- ==================== 答题页 ==================== -->
@@ -466,7 +498,7 @@
         <div class="image-option-wrap" id="optionWrap"></div>
         <div class="nav-btns">
             <button id="prevBtn" disabled>上一题</button>
-            <button id="skipBtn" class="skip-btn secondary">⏭️ 没玩过 跳过</button>
+            <button id="skipBtn" class="skip-btn secondary">没玩过 跳过</button>
             <button id="nextBtn" disabled>下一题</button>
         </div>
     </div>
@@ -476,13 +508,19 @@
         <h2>🌸 你的词条热度排行榜</h2>
         <p class="result-sub">基于你的选择生成的偏好分析</p>
 
-        <!-- 图表区域：水平条形图 -->
+        <!-- 图表区域 -->
         <div id="chartContainer">
             <canvas id="rankChart"></canvas>
             <div class="no-data-msg" id="noDataMsg">
                 🌸 还没有足够的数据<br>
                 <span style="font-size:14px;color:#c0a0a0;">完成测试后，这里将生成你的专属词条热度图</span>
             </div>
+        </div>
+
+        <!-- 分类统计 -->
+        <div class="category-section" id="categorySection">
+            <h4>📊 偏好分类</h4>
+            <div id="categoryList"></div>
         </div>
 
         <!-- Top 词条 -->
@@ -494,13 +532,9 @@
         <!-- 个性描述 -->
         <div class="personality-desc" id="personalityDesc"></div>
 
-        <!-- 分享区域 -->
-        <div class="share-area">
-            <div class="share-text" id="shareText">点击下方按钮生成分享文案 ✨</div>
-            <div class="btn-group" style="margin-top:8px;">
-                <button id="shareBtn" class="secondary" style="font-size:14px;padding:8px 20px;">📋 复制分享文案</button>
-                <button id="restartBtn" style="font-size:14px;padding:8px 20px;">🔄 重新测试</button>
-            </div>
+        <!-- 重新测试按钮 -->
+        <div class="btn-group" style="margin-top:8px;">
+            <button id="restartBtn" style="font-size:14px;padding:8px 20px;">🔄 重新测试</button>
         </div>
     </div>
 
@@ -540,110 +574,118 @@
             "一见钟情": "相信命运般的邂逅，刹那的心动足以铭记一生。"
         };
 
+        // 词条分类
+        const TAG_CATEGORIES = {
+            "外貌系": ["长发男", "白毛", "美人"],
+            "性格系": ["傲娇", "轻浮役", "冷脸萌", "高智"],
+            "关系系": ["年上", "年下", "幼驯染", "真骨", "伪骨", "回避型"],
+            "情感系": ["重男", "白切黑", "烂人真心", "忠犬", "囚禁", "ntr", "一见钟情"]
+        };
+
         // ================================================================
         //  3. 题目数据 (10题)
         // ================================================================
-       const questionList = [{
-    q: "失忆症 Amnesia",
-    opts: [
-        { img: "ikki.png", name: "ikki", tags: ["白毛", "年上", "轻浮役", "美人"] },
-        { img: "kent.png", name: "kent", tags: ["高智", "傲娇"] },
-        { img: "shin.png", name: "shin", tags: ["傲娇", "年下", "幼驯染", "冷脸萌"] },
-        { img: "ukyo.png", name: "ukyo", tags: ["白切黑", "重男", "忠犬", "长发男"] },
-        { img: "toma.png", name: "toma", tags: ["囚禁", "幼驯染", "重男", "年上", "回避型"] }
-    ]
-}, {
-    q: "百密一疏少女心",
-    opts: [
-        { img: "yizai.png", name: "光森一哉", tags: ["回避型", "重男", "ntr"] },
-        { img: "chunri.png", name: "春日", tags: ["重男", "忠犬", "真骨", "幼驯染", "白切黑"] },
-        { img: "xiyin.png", name: "黛汐音", tags: ["美人", "长发男", "一见钟情", "轻浮役"] },
-        { img: "nayoutai.png", name: "八神那由太", tags: ["忠犬", "一见钟情"] },
-        { img: "dawo.png", name: "石动大我", tags: ["回避型", "轻浮役"] }
-    ]
-}, {
-    q: "Collar×Malice 项圈恶意",
-    opts: [
-        { img: "zun.png", name: "笹塚尊", tags: ["高智", "傲娇", "年上", "冷脸萌"] },
-        { img: "humu.png", name: "冴木弓弦", tags: ["重男", "白切黑", "烂人真心"] },
-        { img: "liu.png", name: "柳爱时", tags: ["年上", "幼驯染", "冷脸萌"] },
-        { img: "gangqiqi.png", name: "冈崎契", tags: ["轻浮役", "白毛", "忠犬"] },
-        { img: "fengxiong.png", name: "榎本峰雄", tags: ["忠犬"] },
-        { img: "baishi.png", name: "白石景之", tags: ["年上", "回避型", "长发男"] }
-    ]
-}, {
-    q: "蝶之毒 华之锁",
-    opts: [
-        { img: "xiuxiong.png", name: "尾崎秀雄", tags: ["傲娇", "幼驯染", "回避型", "忠犬"] },
-        { img: "ruiren.png", name: "野宫瑞人", tags: ["年上", "伪骨", "轻浮役", "美人"] },
-        { img: "zhendao.png", name: "真岛芳树", tags: ["重男", "真骨", "烂人真心", "白切黑", "囚禁"] },
-        { img: "sibo.png", name: "斯波纯一", tags: ["重男", "一见钟情", "忠犬", "ntr", "囚禁"] },
-        { img: "tengtian.png", name: "藤田均", tags: ["忠犬", "回避型", "年上"] }
-    ]
-}, {
-    q: "毗卢遮那战姬 源平飞花梦想",
-    opts: [
-        { img: "bianqing.png", name: "武藏坊弁庆", tags: ["忠犬", "ntr"] },
-        { img: "jiaojing.png", name: "平教经", tags: ["冷脸萌", "忠犬"] },
-        { img: "chunxuan.png", name: "春玄", tags: ["忠犬", "幼驯染"] },
-        { img: "yuanlaichao.png", name: "源赖朝", tags: ["伪骨", "回避型", "年上"] },
-        { img: "zhisheng.png", name: "平知盛", tags: ["真骨", "重男"] }
-    ]
-}, {
-    q: "奥林匹亚的晚宴",
-    opts: [
-        { img: "huoxiang.png", name: "火向", tags: ["长发男", "冷脸萌", "白毛"] },
-        { img: "likong.png", name: "璃空", tags: ["冷脸萌", "傲娇"] },
-        { img: "shizhen.png", name: "时贞", tags: ["年下", "ntr"] },
-        { img: "yuan.png", name: "缘", tags: ["轻浮役"] },
-        { img: "xuanye.png", name: "玄叶", tags: ["高智", "回避型", "轻浮役"] },
-        { img: "zhusha.png", name: "朱砂", tags: ["一见钟情", "高智", "年上"] }
-    ]
-}, {
-    q: "终远的威尔修 -ErroR:salvation-",
-    opts: [
-        { img: "yifu.png", name: "伊孚", tags: ["忠犬"] },
-        { img: "xian.png", name: "席安", tags: ["高智"] },
-        { img: "luka.png", name: "璐卡", tags: ["美人", "囚禁", "一见钟情", "长发男"] },
-        { img: "madisi.png", name: "马蒂斯", tags: ["年下", "囚禁", "长发男", "美人"] },
-        { img: "anku.png", name: "安库", tags: ["长发男", "重男", "回避型"] },
-        { img: "adaofu.png", name: "阿道夫", tags: ["年上", "幼驯染"] }
-    ]
-}, {
-    q: "茉莉花之炯 天命胤异传",
-    opts: [
-        { img: "luoou.png", name: "洛欧", tags: ["烂人真心", "轻浮役", "ntr"] },
-        { img: "erjiaoshou.png", name: "羯磨", tags: ["忠犬", "一见钟情"] },
-        { img: "feien.png", name: "斐恩", tags: ["幼驯染", "ntr", "忠犬"] },
-        { img: "feiyi.png", name: "斐伊", tags: ["烂人真心", "长发男", "囚禁", "重男"] },
-        { img: "jiuyanlai.png", name: "玖燕来", tags: ["长发男", "冷脸萌"] },
-        { img: "hu.png", name: "胡青凛", tags: ["美人", "长发男"] },
-        { img: "langwang.png", name: "臧布尼勒", tags: ["白毛", "忠犬"] }
-    ]
-}, {
-    q: "虔诚之花的晚钟 -ricordo-",
-    opts: [
-        { img: "hengli.png", name: "亨利", tags: ["回避型", "重男", "高智"] },
-        { img: "aoluoke.png", name: "奥罗克", tags: ["年下", "忠犬", "白毛", "ntr"] },
-        { img: "jier.png", name: "吉尔", tags: ["年上", "忠犬"] },
-        { img: "yang.png", name: "杨", tags: ["烂人真心", "轻浮役"] },
-        { img: "nigula.png", name: "尼古拉", tags: ["轻浮役", "囚禁"] },
-        { img: "danding.png", name: "但丁", tags: ["白毛", "冷脸萌", "傲娇", "一见钟情"] }
-    ]
-}, {
-    q: "9 R.I.P",
-    opts: [
-        { img: "xiangyang.png", name: "香羊", tags: ["冷脸萌"] },
-        { img: "taojia.png", name: "桃嘉", tags: ["一见钟情", "长发男"] },
-        { img: "mnm.png", name: "魅勿鬽", tags: ["傲娇", "白切黑", "烂人真心"] },
-        { img: "huchun.png", name: "狐春", tags: ["傲娇"] },
-        { img: "xiang.png", name: "响", tags: ["重男", "年下", "囚禁"] },
-        { img: "xingban.png", name: "星绊", tags: ["美人"] },
-        { img: "honghua.png", name: "红华", tags: ["一见钟情", "忠犬"] },
-        { img: "shengye.png", name: "圣夜", tags: ["白毛", "重男"] },
-        { img: "xingmo.png", name: "幸磨", tags: ["长发男", "美人"] }
-    ]
-}];
+        const questionList = [{
+            q: "失忆症 Amnesia",
+            opts: [
+                { img: "ikki.png", name: "ikki", tags: ["白毛", "年上", "轻浮役", "美人"] },
+                { img: "kent.png", name: "kent", tags: ["高智", "傲娇"] },
+                { img: "shin.png", name: "shin", tags: ["傲娇", "年下", "幼驯染", "冷脸萌"] },
+                { img: "ukyo.png", name: "ukyo", tags: ["白切黑", "重男", "忠犬", "长发男"] },
+                { img: "toma.png", name: "toma", tags: ["囚禁", "幼驯染", "重男", "年上", "回避型"] }
+            ]
+        }, {
+            q: "百密一疏少女心",
+            opts: [
+                { img: "yizai.png", name: "光森一哉", tags: ["回避型", "重男", "ntr"] },
+                { img: "chunri.png", name: "春日", tags: ["重男", "忠犬", "真骨", "幼驯染", "白切黑"] },
+                { img: "xiyin.png", name: "黛汐音", tags: ["美人", "长发男", "一见钟情", "轻浮役"] },
+                { img: "nayoutai.png", name: "八神那由太", tags: ["忠犬", "一见钟情"] },
+                { img: "dawo.png", name: "石动大我", tags: ["回避型", "轻浮役"] }
+            ]
+        }, {
+            q: "Collar×Malice 项圈恶意",
+            opts: [
+                { img: "zun.png", name: "笹塚尊", tags: ["高智", "傲娇", "年上", "冷脸萌"] },
+                { img: "humu.png", name: "冴木弓弦", tags: ["重男", "白切黑", "烂人真心"] },
+                { img: "liu.png", name: "柳爱时", tags: ["年上", "幼驯染", "冷脸萌"] },
+                { img: "gangqiqi.png", name: "冈崎契", tags: ["轻浮役", "白毛", "忠犬"] },
+                { img: "fengxiong.png", name: "榎本峰雄", tags: ["忠犬"] },
+                { img: "baishi.png", name: "白石景之", tags: ["年上", "回避型", "长发男"] }
+            ]
+        }, {
+            q: "蝶之毒 华之锁",
+            opts: [
+                { img: "xiuxiong.png", name: "尾崎秀雄", tags: ["傲娇", "幼驯染", "回避型", "忠犬"] },
+                { img: "ruiren.png", name: "野宫瑞人", tags: ["年上", "伪骨", "轻浮役", "美人"] },
+                { img: "zhendao.png", name: "真岛芳树", tags: ["重男", "真骨", "烂人真心", "白切黑", "囚禁"] },
+                { img: "sibo.png", name: "斯波纯一", tags: ["重男", "一见钟情", "忠犬", "ntr", "囚禁"] },
+                { img: "tengtian.png", name: "藤田均", tags: ["忠犬", "回避型", "年上"] }
+            ]
+        }, {
+            q: "毗卢遮那战姬 源平飞花梦想",
+            opts: [
+                { img: "bianqing.png", name: "武藏坊弁庆", tags: ["忠犬", "ntr"] },
+                { img: "jiaojing.png", name: "平教经", tags: ["冷脸萌", "忠犬"] },
+                { img: "chunxuan.png", name: "春玄", tags: ["忠犬", "幼驯染"] },
+                { img: "yuanlaichao.png", name: "源赖朝", tags: ["伪骨", "回避型", "年上"] },
+                { img: "zhisheng.png", name: "平知盛", tags: ["真骨", "重男"] }
+            ]
+        }, {
+            q: "奥林匹亚的晚宴",
+            opts: [
+                { img: "huoxiang.png", name: "火向", tags: ["长发男", "冷脸萌", "白毛"] },
+                { img: "likong.png", name: "璃空", tags: ["冷脸萌", "傲娇"] },
+                { img: "shizhen.png", name: "时贞", tags: ["年下", "ntr"] },
+                { img: "yuan.png", name: "缘", tags: ["轻浮役"] },
+                { img: "xuanye.png", name: "玄叶", tags: ["高智", "回避型", "轻浮役"] },
+                { img: "zhusha.png", name: "朱砂", tags: ["一见钟情", "高智", "年上"] }
+            ]
+        }, {
+            q: "终远的威尔修 -ErroR:salvation-",
+            opts: [
+                { img: "yifu.png", name: "伊孚", tags: ["忠犬"] },
+                { img: "xian.png", name: "席安", tags: ["高智"] },
+                { img: "luka.png", name: "璐卡", tags: ["美人", "囚禁", "一见钟情", "长发男"] },
+                { img: "madisi.png", name: "马蒂斯", tags: ["年下", "囚禁", "长发男", "美人"] },
+                { img: "anku.png", name: "安库", tags: ["长发男", "重男", "回避型"] },
+                { img: "adaofu.png", name: "阿道夫", tags: ["年上", "幼驯染"] }
+            ]
+        }, {
+            q: "茉莉花之炯 天命胤异传",
+            opts: [
+                { img: "luoou.png", name: "洛欧", tags: ["烂人真心", "轻浮役", "ntr"] },
+                { img: "erjiaoshou.png", name: "羯磨", tags: ["忠犬", "一见钟情"] },
+                { img: "feien.png", name: "斐恩", tags: ["幼驯染", "ntr", "忠犬"] },
+                { img: "feiyi.png", name: "斐伊", tags: ["烂人真心", "长发男", "囚禁", "重男"] },
+                { img: "jiuyanlai.png", name: "玖燕来", tags: ["长发男", "冷脸萌"] },
+                { img: "hu.png", name: "胡青凛", tags: ["美人", "长发男"] },
+                { img: "langwang.png", name: "臧布尼勒", tags: ["白毛", "忠犬"] }
+            ]
+        }, {
+            q: "虔诚之花的晚钟 -ricordo-",
+            opts: [
+                { img: "hengli.png", name: "亨利", tags: ["回避型", "重男", "高智"] },
+                { img: "aoluoke.png", name: "奥罗克", tags: ["年下", "忠犬", "白毛", "ntr"] },
+                { img: "jier.png", name: "吉尔", tags: ["年上", "忠犬"] },
+                { img: "yang.png", name: "杨", tags: ["烂人真心", "轻浮役"] },
+                { img: "nigula.png", name: "尼古拉", tags: ["轻浮役", "囚禁"] },
+                { img: "danding.png", name: "但丁", tags: ["白毛", "冷脸萌", "傲娇", "一见钟情"] }
+            ]
+        }, {
+            q: "9 R.I.P",
+            opts: [
+                { img: "xiangyang.png", name: "香羊", tags: ["冷脸萌"] },
+                { img: "taojia.png", name: "桃嘉", tags: ["一见钟情", "长发男"] },
+                { img: "mnm.png", name: "魅勿鬽", tags: ["傲娇", "白切黑", "烂人真心"] },
+                { img: "huchun.png", name: "狐春", tags: ["傲娇"] },
+                { img: "xiang.png", name: "响", tags: ["重男", "年下", "囚禁"] },
+                { img: "xingban.png", name: "星绊", tags: ["美人"] },
+                { img: "honghua.png", name: "红华", tags: ["一见钟情", "忠犬"] },
+                { img: "shengye.png", name: "圣夜", tags: ["白毛", "重男"] },
+                { img: "xingmo.png", name: "幸磨", tags: ["长发男", "美人"] }
+            ]
+        }];
 
         // ================================================================
         //  4. DOM 引用 & 状态
@@ -657,7 +699,6 @@
         const nextBtn = document.getElementById("nextBtn");
         const skipBtn = document.getElementById("skipBtn");
         const restartBtn = document.getElementById("restartBtn");
-        const shareBtn = document.getElementById("shareBtn");
 
         const currentDom = document.getElementById("current");
         const totalDom = document.getElementById("total");
@@ -666,12 +707,12 @@
 
         const topTagsList = document.getElementById("topTagsList");
         const personalityDesc = document.getElementById("personalityDesc");
-        const shareText = document.getElementById("shareText");
         const noDataMsg = document.getElementById("noDataMsg");
         const chartCanvas = document.getElementById("rankChart");
+        const categoryList = document.getElementById("categoryList");
 
         let index = 0;
-        let answerRecord = [];
+        let answerRecord = []; // 每个元素为数组，存储选中选项的索引（或 null 表示跳过）
         let myChart = null;
 
         // ================================================================
@@ -690,23 +731,6 @@
             return colors[idx % colors.length];
         }
 
-        function generateShareText(topTags, tagCounts) {
-            if (!topTags || topTags.length === 0) return "还没有测试结果呢，快来测测你的日乙男主偏好！🌸";
-            const top1 = topTags[0];
-            const top2 = topTags[1] || "";
-            const top3 = topTags[2] || "";
-            let text = `🌸 我的日乙男主偏好测试结果 🌸\n`;
-            text += `🏆 核心偏好：${top1}`;
-            if (top2) text += `、${top2}`;
-            if (top3) text += `、${top3}`;
-            text += `\n💕 ${TAG_DESC_MAP[top1] || "你的偏好很独特！"}`;
-            if (top2 && TAG_DESC_MAP[top2]) {
-                text += `\n💕 ${TAG_DESC_MAP[top2]}`;
-            }
-            text += `\n✨ 快来测测你的专属词条吧！`;
-            return text;
-        }
-
         // ================================================================
         //  6. 渲染题目
         // ================================================================
@@ -717,9 +741,10 @@
             qText.innerText = item.q;
             optionWrap.innerHTML = "";
 
-            const isSkipped = answerRecord[index] === null;
-            const hasSelected = answerRecord[index] && answerRecord[index].tags && answerRecord[index].tags.length > 0;
-            nextBtn.disabled = !(isSkipped || hasSelected);
+            const currentSelections = answerRecord[index];
+            const isSkipped = currentSelections === null;
+
+            nextBtn.disabled = !(isSkipped || (Array.isArray(currentSelections) && currentSelections.length > 0));
             prevBtn.disabled = index === 0;
 
             if (index === questionList.length - 1) {
@@ -753,18 +778,27 @@
                     div.appendChild(nameDiv);
                 }
 
-                if (answerRecord[index] && answerRecord[index].tags && answerRecord[index].index === optIndex) {
+                if (!isSkipped && Array.isArray(currentSelections) && currentSelections.includes(optIndex)) {
                     div.classList.add("active");
                 }
 
                 div.onclick = function() {
                     if (answerRecord[index] === null) {
-                        answerRecord[index] = undefined;
+                        answerRecord[index] = [];
                     }
-                    document.querySelectorAll(".img-opt").forEach(d => d.classList.remove("active"));
-                    div.classList.add("active");
-                    answerRecord[index] = { index: optIndex, val: opt.val, tags: opt.tags || [] };
-                    nextBtn.disabled = false;
+                    if (!Array.isArray(answerRecord[index])) {
+                        answerRecord[index] = [];
+                    }
+                    const selections = answerRecord[index];
+                    const idx = selections.indexOf(optIndex);
+                    if (idx > -1) {
+                        selections.splice(idx, 1);
+                        div.classList.remove("active");
+                    } else {
+                        selections.push(optIndex);
+                        div.classList.add("active");
+                    }
+                    nextBtn.disabled = !(selections.length > 0);
                     skipBtn.classList.remove("active-skip");
                     skipBtn.innerText = "没玩过 跳过";
                 };
@@ -798,18 +832,25 @@
         }
 
         // ================================================================
-        //  8. 显示结果 (水平条形图 - 仅显示有得分的词条 + 修复标签显示)
+        //  8. 显示结果（只显示得分大于0的词条）
         // ================================================================
         function showResult() {
             // ---- 统计词条 ----
             const tagCounts = {};
             ALL_TAGS.forEach(tag => tagCounts[tag] = 0);
-            answerRecord.forEach(ans => {
-                if (ans && ans.tags) {
-                    ans.tags.forEach(tag => {
-                        if (tagCounts[tag] !== undefined) tagCounts[tag]++;
-                    });
-                }
+
+            answerRecord.forEach((selections, qIndex) => {
+                if (selections === null || !Array.isArray(selections) || selections.length === 0) return;
+                const item = questionList[qIndex];
+                if (!item) return;
+                selections.forEach(optIndex => {
+                    const opt = item.opts[optIndex];
+                    if (opt && opt.tags) {
+                        opt.tags.forEach(tag => {
+                            if (tagCounts[tag] !== undefined) tagCounts[tag]++;
+                        });
+                    }
+                });
             });
 
             // ---- 过滤掉得分为0的词条 ----
@@ -818,9 +859,9 @@
             const sortedData = sortedTags.map(tag => tagCounts[tag]);
 
             const top3 = sortedTags.slice(0, 3);
-            const hasData = top3.length > 0;
+            const hasData = sortedData.length > 0;
 
-            // ---- 绘制水平条形图 ----
+            // ---- 绘制条形图 ----
             const ctx = chartCanvas.getContext('2d');
             if (myChart) myChart.destroy();
 
@@ -834,6 +875,10 @@
                     return `rgba(234, 139, 139, ${intensity})`;
                 });
 
+                // 动态高度：每个词条占 32px，最小 200px
+                const chartHeight = Math.max(200, sortedTags.length * 32 + 40);
+                chartCanvas.style.height = chartHeight + 'px';
+
                 myChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -841,32 +886,18 @@
                         datasets: [{
                             data: sortedData,
                             backgroundColor: colors,
-                            borderColor: 'rgba(234, 139, 139, 0.3)',
+                            borderColor: 'rgba(234, 139, 139, 0.1)',
                             borderWidth: 0,
-                            borderRadius: 6,
+                            borderRadius: 4,
                         }]
                     },
                     options: {
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
-                        layout: {
-                            padding: {
-                                right: 30  // 为标签留出空间
-                            }
-                        },
                         plugins: {
                             legend: { display: false },
-                            datalabels: {
-                                anchor: 'end',
-                                align: 'end',
-                                color: '#682c10',
-                                font: { weight: 'bold', size: 12 },
-                                formatter: (val) => val > 0 ? val : '',
-                                offset: 6,          // 增大偏移，确保不重叠
-                                clip: false,        // 防止被裁剪
-                                display: 'always'   // 强制显示所有标签
-                            },
+                            datalabels: { display: false },
                             tooltip: {
                                 callbacks: {
                                     label: (ctx) => `${ctx.parsed.x} 次`
@@ -899,7 +930,33 @@
                 noDataMsg.style.display = 'block';
             }
 
-            // ---- 渲染 Top 3 词条 ----
+            // ---- 分类统计（显示所有分类，即使为0） ----
+            const catScores = {};
+            const maxCatScore = (() => {
+                let max = 0;
+                for (const [cat, tags] of Object.entries(TAG_CATEGORIES)) {
+                    let sum = 0;
+                    tags.forEach(t => sum += tagCounts[t] || 0);
+                    catScores[cat] = sum;
+                    if (sum > max) max = sum;
+                }
+                return Math.max(1, max);
+            })();
+
+            categoryList.innerHTML = '';
+            for (const [cat, score] of Object.entries(catScores)) {
+                const pct = (score / maxCatScore) * 100;
+                const div = document.createElement('div');
+                div.className = 'category-item';
+                div.innerHTML = `
+                    <span class="cat-label">${cat}</span>
+                    <div class="cat-bar"><div class="cat-fill" style="width:${pct}%;"></div></div>
+                    <span class="cat-score">${score}</span>
+                `;
+                categoryList.appendChild(div);
+            }
+
+            // ---- Top 词条徽章 ----
             topTagsList.innerHTML = '';
             if (top3.length === 0) {
                 topTagsList.innerHTML = '<span style="color:#b07a7a;">你跳过了所有题目，试试重新测试吧 ✨</span>';
@@ -907,22 +964,24 @@
                 top3.forEach((tag, idx) => {
                     const pill = document.createElement('span');
                     pill.className = `tag-pill ${getTagColor(idx)}`;
-                    pill.innerHTML = `${tag} <span class="badge">${tagCounts[tag]}</span>`;
+                    const count = tagCounts[tag];
+                    pill.innerHTML = `${tag} <span class="badge">${count}</span>`;
                     topTagsList.appendChild(pill);
                 });
             }
 
             // ---- 个性描述 ----
             let descHTML = '';
-            if (top3.length > 0) {
-                const mainTag = top3[0];
+            const validTop = top3.filter(t => tagCounts[t] > 0);
+            if (validTop.length > 0) {
+                const mainTag = validTop[0];
                 const desc = TAG_DESC_MAP[mainTag] || `你有着独特的偏好，${mainTag} 是你最核心的关键词！`;
                 let extra = '';
-                if (top3.length >= 2 && TAG_DESC_MAP[top3[1]]) {
-                    extra = ` 同时，${TAG_DESC_MAP[top3[1]]}`;
+                if (validTop.length >= 2 && TAG_DESC_MAP[validTop[1]]) {
+                    extra = ` 同时，${TAG_DESC_MAP[validTop[1]]}`;
                 }
-                if (top3.length >= 3 && TAG_DESC_MAP[top3[2]]) {
-                    extra += ` 此外，${TAG_DESC_MAP[top3[2]]}`;
+                if (validTop.length >= 3 && TAG_DESC_MAP[validTop[2]]) {
+                    extra += ` 此外，${TAG_DESC_MAP[validTop[2]]}`;
                 }
                 descHTML = `<span class="emoji-big">💕</span> ${desc}${extra}`;
             } else {
@@ -930,11 +989,6 @@
             }
             personalityDesc.innerHTML = descHTML;
 
-            // ---- 分享文案 ----
-            const shareContent = generateShareText(top3, tagCounts);
-            shareText.innerText = shareContent;
-
-            // ---- 显示结果页 ----
             showPage(resultPage);
         }
 
@@ -942,7 +996,7 @@
         //  9. 导航事件
         // ================================================================
         nextBtn.onclick = function() {
-            if (answerRecord[index] !== undefined || answerRecord[index] !== null) {
+            if (answerRecord[index] !== undefined && answerRecord[index] !== null) {
                 goToNext();
             }
         };
@@ -975,44 +1029,7 @@
         };
 
         // ================================================================
-        //  10. 分享功能
-        // ================================================================
-        shareBtn.onclick = function() {
-            const text = shareText.innerText;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => {
-                    const orig = shareBtn.innerText;
-                    shareBtn.innerText = '✅ 已复制！';
-                    setTimeout(() => { shareBtn.innerText = orig; }, 1800);
-                }).catch(() => {
-                    fallbackCopy(text);
-                });
-            } else {
-                fallbackCopy(text);
-            }
-        };
-
-        function fallbackCopy(text) {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.left = '-9999px';
-            ta.style.top = '-9999px';
-            document.body.appendChild(ta);
-            ta.select();
-            try {
-                document.execCommand('copy');
-                const orig = shareBtn.innerText;
-                shareBtn.innerText = '✅ 已复制！';
-                setTimeout(() => { shareBtn.innerText = orig; }, 1800);
-            } catch (e) {
-                alert('复制失败，请手动复制文案～');
-            }
-            document.body.removeChild(ta);
-        }
-
-        // ================================================================
-        //  11. 初始化
+        //  10. 初始化
         // ================================================================
         showPage(homePage);
     </script>
